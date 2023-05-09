@@ -1,8 +1,10 @@
 package dev.asror.botgame.processors.message;
 
 import com.pengrad.telegrambot.TelegramBot;
+import com.pengrad.telegrambot.model.InlineQuery;
 import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.Update;
+import com.pengrad.telegrambot.request.AnswerInlineQuery;
 import com.pengrad.telegrambot.request.DeleteMessage;
 import com.pengrad.telegrambot.request.SendMessage;
 import dev.asror.botgame.config.TelegramBotConfiguration;
@@ -37,7 +39,10 @@ public class DefaultMessageProcessor implements Processor<DefaultState> {
             bot.execute(new DeleteMessage(chatID, message.messageId()));
         } else if (state.equals(DefaultState.MAIN_STATE)) {
             if (Objects.nonNull(text)){
-                if (text.equals("/start")) {
+                if (text.equals(BaseUtils.TIC_TAC_TOE)){
+//                    update.inlineQuery().
+
+                } else if (text.equals("/start")) {
                     userState.put(chatID, DefaultState.MAIN_STATE);
                     bot.execute(sendMessageFactory.sendMessageWithMainMenu(chatID, BaseUtils.MENU));
                 } else if (text.equals("/fullreg")){
@@ -46,11 +51,11 @@ public class DefaultMessageProcessor implements Processor<DefaultState> {
                     bot.execute(sendMessage);
 
                     userState.put(chatID, RegistrationState.PHONE_NUMBER);
+                } else {
+                    bot.execute(new DeleteMessage(chatID, message.messageId()));
                 }
             }
 
-        } else {
-            bot.execute(new DeleteMessage(chatID, message.messageId()));
         }
     }
 }

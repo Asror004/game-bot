@@ -10,4 +10,5 @@ public interface BaseUtils {
                         Siz botdan to'liq ro'yxatdan o'tmagansiz!
                         Hohlagan vaqt /fullreg komondasi orqali ro'yxatdan o'ting ✔        
                         """;
+    String TIC_TAC_TOE = "Tic tac toe (X, 0 o'yini)";
 }

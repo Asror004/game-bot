@@ -15,6 +15,7 @@ public class UpdateHandler {
     private final ExecutorService executor;
     private final MessageHandler messageHandler;
     private final CallbackHandler callbackHandler;
+    private final InlineQueryHandler inlineQueryHandler;
 
     public void handle(List<Update> updates) {
         CompletableFuture.runAsync(() -> {
@@ -24,6 +25,9 @@ public class UpdateHandler {
                         messageHandler.handle(update);
                     else if ( Objects.nonNull(update.callbackQuery()) )
                         callbackHandler.handle(update);
+                    else if ( Objects.nonNull(update.inlineQuery()) ) {
+                        inlineQueryHandler.handle(update);
+                    }
                 });
             }
         });

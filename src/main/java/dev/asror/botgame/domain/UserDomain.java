@@ -38,7 +38,7 @@ public class UserDomain extends Auditable {
     }
 
     public enum Active {
-        BLOCKED, IN_ACTIVE, ACTIVE,
+        BLOCKED, ACTIVE,
     }
 
     public enum Role {
@@ -52,7 +52,7 @@ public class UserDomain extends Auditable {
         this.phoneNumber = phoneNumber;
         this.fullName = fullName;
         this.language = Objects.nonNull(language) ? language : Language.UZBEK;
-        this.active = Objects.nonNull(active) ? active : Active.IN_ACTIVE;
+        this.active = Objects.nonNull(active) ? active : Active.ACTIVE;
         this.role = Objects.nonNull(role) ? role : Role.USER;
     }
 }

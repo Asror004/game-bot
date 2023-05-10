@@ -1,5 +1,7 @@
 package dev.asror.botgame.utils;
 
+import java.util.Objects;
+
 public interface BaseUtils {
     String MENU = "Menu🪟";
     String WRONG_INPUT = "Noto'g'ri qiymat kiritildi ❌";
@@ -11,4 +13,8 @@ public interface BaseUtils {
                         Hohlagan vaqt /fullreg komondasi orqali ro'yxatdan o'ting ✔        
                         """;
     String TIC_TAC_TOE = "Tic tac toe (X, 0 o'yini)";
+
+    public static String getFullName(String firstName, String lastName) {
+        return firstName + " " + (Objects.nonNull(lastName) ? lastName : "");
+    }
 }

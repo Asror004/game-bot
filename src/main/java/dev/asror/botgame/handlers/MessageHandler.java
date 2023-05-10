@@ -50,25 +50,26 @@ public class MessageHandler implements Handler {
 
         SendMessage sendMessage;
         Chat chat = message.chat();
+        Long chatId = chat.id();
 
         if (message.text().equalsIgnoreCase("/start")) {
             String lastName = chat.lastName();
             String firstName = chat.firstName();
 
-            String fullName = firstName + " " + (Objects.nonNull(lastName) ? lastName : "");
+            String fullName = BaseUtils.getFullName(firstName, lastName);
             String messageText = """
                              Assalomu alaykum %s
                              Botdan ro'yxatdan o'tish uchun telefon raqamingizni kiriting! 📞
                              """.formatted(fullName);
 
-            sendMessage = new SendMessage(chat.id(), messageText);
+            sendMessage = new SendMessage(chatId, messageText);
             sendMessage.replyMarkup(replyKeyboardMarkupFactory.
                     phoneNumberAndSkip());
 
-            userState.put(chat.id(), RegistrationState.PHONE_NUMBER);
-            userService.save(chat, fullName);
+            userState.put(chatId, RegistrationState.PHONE_NUMBER);
+            userService.save(chatId, fullName);
         } else {
-            sendMessage = new SendMessage(chat.id(), "Noto'g'ri buyruq kiritildi❌\nBotdan to'liq foydalanish uchun ➡️ /start komandasini kiriting!");
+            sendMessage = new SendMessage(chatId, "Noto'g'ri buyruq kiritildi❌\nBotdan to'liq foydalanish uchun ➡️ /start komandasini kiriting!");
         }
 
         bot.execute(sendMessage);

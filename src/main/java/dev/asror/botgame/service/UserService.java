@@ -2,6 +2,7 @@ package dev.asror.botgame.service;
 
 import com.pengrad.telegrambot.model.Chat;
 import com.pengrad.telegrambot.model.Contact;
+import com.pengrad.telegrambot.model.User;
 import dev.asror.botgame.domain.UserDomain;
 import dev.asror.botgame.repository.UserRepository;
 import dev.asror.botgame.response.Response;
@@ -24,17 +25,13 @@ public class UserService {
     }
 
     @Async
-    public void save(Chat chat, String fullName) {
-//        UserDomain userDomain = findById(chat.id()).orElse(null);
-
-//        if (Objects.isNull(userDomain)) {
+    public void save(Long chatId, String fullName) {
         UserDomain user = UserDomain.childBuilder()
-                .chatId(chat.id())
+                .chatId(chatId)
                 .fullName(fullName)
                 .build();
 
         userRepository.save(user);
-//        }
     }
 
     @Async
@@ -44,8 +41,6 @@ public class UserService {
 
         if (Objects.nonNull(contact))
             user.setPhoneNumber(contact.phoneNumber());
-
-        user.setActive(UserDomain.Active.ACTIVE);
 
         userRepository.save(user);
     }

@@ -12,7 +12,9 @@ import dev.asror.botgame.processors.Processor;
 import dev.asror.botgame.state.DefaultState;
 import dev.asror.botgame.state.RegistrationState;
 import dev.asror.botgame.state.State;
+import dev.asror.botgame.state.TicTacToeState;
 import dev.asror.botgame.utils.BaseUtils;
+import dev.asror.botgame.utils.factory.InlineKeyboardFactory;
 import dev.asror.botgame.utils.factory.ReplyKeyboardMarkupFactory;
 import dev.asror.botgame.utils.factory.SendMessageFactory;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +30,7 @@ public class DefaultMessageProcessor implements Processor<DefaultState> {
     private final Map<Long, State> userState;
     private final ReplyKeyboardMarkupFactory replyKeyboardMarkupFactory;
     private final SendMessageFactory sendMessageFactory;
+    private final InlineKeyboardFactory inlineKeyboardFactory;
 
     @Override
     public void process(Update update, DefaultState state) {
@@ -40,8 +43,11 @@ public class DefaultMessageProcessor implements Processor<DefaultState> {
         } else if (state.equals(DefaultState.MAIN_STATE)) {
             if (Objects.nonNull(text)){
                 if (text.equals(BaseUtils.TIC_TAC_TOE)){
-//                    update.inlineQuery().
+                    SendMessage sendMessage = new SendMessage(chatID, "Do'stlar bilan o'ynash uchun tugmani bosing 👇");
+                    sendMessage.replyMarkup(inlineKeyboardFactory.send());
+                    bot.execute(sendMessage);
 
+                    userState.put(chatID, TicTacToeState.SEND);
                 } else if (text.equals("/start")) {
                     userState.put(chatID, DefaultState.MAIN_STATE);
                     bot.execute(sendMessageFactory.sendMessageWithMainMenu(chatID, BaseUtils.MENU));

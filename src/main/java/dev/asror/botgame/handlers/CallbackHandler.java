@@ -5,6 +5,7 @@ import com.pengrad.telegrambot.model.CallbackQuery;
 import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.Update;
 import dev.asror.botgame.config.TelegramBotConfiguration;
+import dev.asror.botgame.domain.TicTacToe;
 import dev.asror.botgame.processors.callback.DefaultCallbackProcessor;
 import dev.asror.botgame.processors.callback.TicTacToeWithFriendsCallbackProcessor;
 import dev.asror.botgame.state.DefaultState;
@@ -13,6 +14,7 @@ import dev.asror.botgame.state.TicTacToeState;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
 
@@ -23,27 +25,30 @@ public class CallbackHandler implements Handler {
     private final Map<Long, State> userState;
     private final DefaultCallbackProcessor defaultCallbackProcessor;
     private final TicTacToeWithFriendsCallbackProcessor ticTacToeProcessor;
+    private final Map<String, Map<Long, TicTacToeState>> ticTacToeState;
 
 
     @Override
     public void handle(Update update) {
         CallbackQuery callbackQuery = update.callbackQuery();
         Message message = callbackQuery.message();
-        Long chatID;
 
-        if (Objects.nonNull(message))
-            chatID = message.chat().id();
-        else
-            chatID = callbackQuery.from().id();
+        long chatId = Objects.nonNull(message) ? message.chat().id() : callbackQuery.from().id();
 
-        State state = userState.get(chatID);
+        String id;
+        String[] data = callbackQuery.data().split("\\|");
+        try {
+            id = data[1];
+        } catch (Exception e){
+            id = "";
+        }
 
-        String data = callbackQuery.data();
-        if (data.equals("start") && !state.equals(TicTacToeState.SEND)){
-            ticTacToeProcessor.process(update, TicTacToeState.START);
-        } else if (state instanceof TicTacToeState ticTacToeState) {
-            ticTacToeProcessor.process(update, ticTacToeState);
-        } else if (state instanceof DefaultState defaultState) {
+        TicTacToeState ticTacToeUserState = ticTacToeState.get(id).get(chatId);
+        State state = userState.get(chatId);
+
+        if (Objects.nonNull(ticTacToeUserState) || data[0].equals("start"))
+            ticTacToeProcessor.process(update, ticTacToeUserState);
+        else if (state instanceof DefaultState defaultState) {
             defaultCallbackProcessor.process(update, defaultState);
         }
     }

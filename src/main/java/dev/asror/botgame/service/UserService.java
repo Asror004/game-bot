@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -24,11 +25,20 @@ public class UserService {
         return Response.<List<UserDomain>>builder().body(userRepository.findAll()).build();
     }
 
+    public String findCodeById(Long chatId){
+        return userRepository.findByChatId(chatId).orElseThrow();
+    }
+
+    public boolean hasCode(String code){
+        return userRepository.hasCode(code);
+    }
+
     @Async
     public void save(Long chatId, String fullName) {
         UserDomain user = UserDomain.childBuilder()
                 .chatId(chatId)
                 .fullName(fullName)
+                .code(UUID.randomUUID().toString())
                 .build();
 
         userRepository.save(user);

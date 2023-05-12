@@ -3,6 +3,8 @@ package dev.asror.botgame.handlers;
 import com.pengrad.telegrambot.model.InlineQuery;
 import com.pengrad.telegrambot.model.Update;
 import dev.asror.botgame.processors.inlineQuery.TicTacToeInlineProcessor;
+import dev.asror.botgame.service.UserService;
+import dev.asror.botgame.state.DefaultState;
 import dev.asror.botgame.state.State;
 import dev.asror.botgame.state.TicTacToeState;
 import lombok.RequiredArgsConstructor;
@@ -16,8 +18,8 @@ import java.util.Objects;
 @Component
 public class InlineQueryHandler implements Handler {
     private final Map<Long, State> userState;
-    private final List<String> codes;
     private final TicTacToeInlineProcessor ticTacToeProcessor;
+    private final UserService userService;
 
     @Override
     public void handle(Update update) {
@@ -25,11 +27,9 @@ public class InlineQueryHandler implements Handler {
         Long chatId = inlineQuery.from().id();
         String query = inlineQuery.query();
 
-        if (codes.contains(query)){
-            codes.remove(query);
-
+        if (userService.hasCode(query)){
             if (Objects.nonNull(userState.get(chatId))) {
-                ticTacToeProcessor.process(update, TicTacToeState.SEND);
+                ticTacToeProcessor.process(update, TicTacToeState.SENDING);
             }
         }
     }

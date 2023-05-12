@@ -30,6 +30,9 @@ public class UserDomain extends Auditable {
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    @Column(nullable = false)
+    private String code;
+
     public UserDomain() {
     }
 
@@ -46,13 +49,14 @@ public class UserDomain extends Auditable {
     }
 
     @Builder(builderMethodName = "childBuilder")
-    public UserDomain(LocalDateTime createdAt, LocalDateTime updatedAt, boolean deleted, Long chatId, String phoneNumber, String fullName, Language language, Active active, Role role) {
+    public UserDomain(LocalDateTime createdAt, LocalDateTime updatedAt, boolean deleted, Long chatId, String phoneNumber, String fullName, Language language, Active active, Role role, String code) {
         super(createdAt, updatedAt, deleted);
         this.chatId = chatId;
         this.phoneNumber = phoneNumber;
         this.fullName = fullName;
-        this.language = Objects.nonNull(language) ? language : Language.UZBEK;
-        this.active = Objects.nonNull(active) ? active : Active.ACTIVE;
-        this.role = Objects.nonNull(role) ? role : Role.USER;
+        this.language = language;
+        this.active = active;
+        this.role = role;
+        this.code = code;
     }
 }

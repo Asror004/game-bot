@@ -9,6 +9,7 @@ import com.pengrad.telegrambot.request.DeleteMessage;
 import com.pengrad.telegrambot.request.SendMessage;
 import dev.asror.botgame.config.TelegramBotConfiguration;
 import dev.asror.botgame.processors.Processor;
+import dev.asror.botgame.service.UserService;
 import dev.asror.botgame.state.DefaultState;
 import dev.asror.botgame.state.RegistrationState;
 import dev.asror.botgame.state.State;
@@ -31,6 +32,7 @@ public class DefaultMessageProcessor implements Processor<DefaultState> {
     private final ReplyKeyboardMarkupFactory replyKeyboardMarkupFactory;
     private final SendMessageFactory sendMessageFactory;
     private final InlineKeyboardFactory inlineKeyboardFactory;
+    private final UserService userService;
 
     @Override
     public void process(Update update, DefaultState state) {
@@ -44,10 +46,8 @@ public class DefaultMessageProcessor implements Processor<DefaultState> {
             if (Objects.nonNull(text)){
                 if (text.equals(BaseUtils.TIC_TAC_TOE)){
                     SendMessage sendMessage = new SendMessage(chatID, "Do'stlar bilan o'ynash uchun tugmani bosing 👇");
-                    sendMessage.replyMarkup(inlineKeyboardFactory.send());
+                    sendMessage.replyMarkup(inlineKeyboardFactory.send(userService.findCodeById(chatID)));
                     bot.execute(sendMessage);
-
-                    userState.put(chatID, TicTacToeState.SEND);
                 } else if (text.equals("/start")) {
                     userState.put(chatID, DefaultState.MAIN_STATE);
                     bot.execute(sendMessageFactory.sendMessageWithMainMenu(chatID, BaseUtils.MENU));

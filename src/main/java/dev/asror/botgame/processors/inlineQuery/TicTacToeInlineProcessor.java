@@ -38,6 +38,9 @@ public class TicTacToeInlineProcessor implements Processor<TicTacToeState> {
             InlineQueryResultArticle article = new InlineQueryResultArticle("1", "Tic Tac Toe", messageContent);
 
             String id = UUID.randomUUID().toString();
+            while (ticTacToeState.get(id) != null){
+                id = UUID.randomUUID().toString();
+            }
 
             article.description("X, 0");
             article.replyMarkup(inlineKeyboardFactory.startButton(id));

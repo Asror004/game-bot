@@ -43,11 +43,11 @@ public class CallbackHandler implements Handler {
             id = "";
         }
 
-        TicTacToeState ticTacToeUserState = ticTacToeState.get(id).get(chatId);
+        Map<Long, TicTacToeState> stateMap = ticTacToeState.get(id);
         State state = userState.get(chatId);
 
-        if (Objects.nonNull(ticTacToeUserState) || data[0].equals("start"))
-            ticTacToeProcessor.process(update, ticTacToeUserState);
+        if (Objects.nonNull(stateMap) || data[0].equals("start"))
+            ticTacToeProcessor.process(update, stateMap.get(chatId));
         else if (state instanceof DefaultState defaultState) {
             defaultCallbackProcessor.process(update, defaultState);
         }

@@ -27,4 +27,7 @@ public class Beans {
     public Map<String, Map<Long, TicTacToeState>> ticTacToeState(){
         return new HashMap<>();
     }
+
+    @Bean
+    public Map<String, Boolean> currentPlayer(){return new HashMap<>();}
 }

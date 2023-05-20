@@ -7,6 +7,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.StringJoiner;
 
 @Component
 @RequiredArgsConstructor
@@ -22,34 +23,25 @@ public class InlineKeyboardFactory {
         );
     }
 
-    public InlineKeyboardMarkup ticTacToeButtons(byte[][] board){
+    public InlineKeyboardMarkup ticTacToeButtons(byte[][] board, String id){
         InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
         List<InlineKeyboardButton> row;
+        StringJoiner sj;
 
         for (int i = 0; i < 3; i++) {
             row = new ArrayList<>();
             for (int j = 0; j < 3; j++) {
+                sj = new StringJoiner("|");
+                sj.add(String.valueOf(board[i][j]));
+                sj.add(id);
+                sj.add(String.valueOf(i));
+                sj.add(String.valueOf(j));
+
                 row.add(createButton(getChar(board[i][j]),
-                        String.valueOf(board[i][j])+"_"+i));
+                        sj.toString()));
             }
 
             markup.addRow(row.get(0), row.get(1), row.get(2));
-        }
-
-        return markup;
-    }
-
-    public InlineKeyboardMarkup ticTacToeStartButtons(){
-        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
-        InlineKeyboardButton[] row;
-
-        for (int i = 0; i < 3; i++) {
-            row = new InlineKeyboardButton[3];
-            for (int j = 0; j < 3; j++) {
-                row[j] = createButton("ㅤㅤㅤㅤ", "0_"+i+"_"+j);
-            }
-
-            markup.addRow(row);
         }
 
         return markup;
@@ -61,6 +53,28 @@ public class InlineKeyboardFactory {
             case 2 -> "X";
             default -> "ㅤㅤㅤㅤ";
         };
+    }
+
+    public InlineKeyboardMarkup ticTacToeStartButtons(String id){
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        InlineKeyboardButton[] row;
+        StringJoiner sj;
+
+        for (int i = 0; i < 3; i++) {
+            row = new InlineKeyboardButton[3];
+            for (int j = 0; j < 3; j++) {
+                sj = new StringJoiner("|");
+                sj.add("0");
+                sj.add(id);
+                sj.add(String.valueOf(i));
+                sj.add(String.valueOf(j));
+                row[j] = createButton("ㅤㅤㅤㅤ", sj.toString());
+            }
+
+            markup.addRow(row);
+        }
+
+        return markup;
     }
 
     public InlineKeyboardMarkup startButton(String id){

@@ -1,8 +1,10 @@
 package dev.asror.botgame.processors.inlineQuery;
 
 import com.pengrad.telegrambot.TelegramBot;
+import com.pengrad.telegrambot.model.Chat;
 import com.pengrad.telegrambot.model.InlineQuery;
 import com.pengrad.telegrambot.model.Update;
+import com.pengrad.telegrambot.model.User;
 import com.pengrad.telegrambot.model.request.InlineQueryResult;
 import com.pengrad.telegrambot.model.request.InlineQueryResultArticle;
 import com.pengrad.telegrambot.model.request.InputTextMessageContent;
@@ -10,7 +12,9 @@ import com.pengrad.telegrambot.request.AnswerInlineQuery;
 import dev.asror.botgame.config.TelegramBotConfiguration;
 import dev.asror.botgame.processors.Processor;
 import dev.asror.botgame.processors.callback.TicTacToeWithFriendsCallbackProcessor;
+import dev.asror.botgame.service.UserService;
 import dev.asror.botgame.state.TicTacToeState;
+import dev.asror.botgame.utils.BaseUtils;
 import dev.asror.botgame.utils.factory.InlineKeyboardFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -27,6 +31,7 @@ public class TicTacToeInlineProcessor implements Processor<TicTacToeState> {
     private final TelegramBot bot = TelegramBotConfiguration.get();
     private final TicTacToeWithFriendsCallbackProcessor ticTacToeWithFriendsCallbackProcessor;
     private final Map<String, Map<Long, TicTacToeState>> ticTacToeState;
+    private final UserService userService;
 
     @Override
     public void process(Update update, TicTacToeState state) {
@@ -34,7 +39,7 @@ public class TicTacToeInlineProcessor implements Processor<TicTacToeState> {
             InlineQuery inlineQuery = update.inlineQuery();
             String inlineQueryId = inlineQuery.id();
 
-            InputTextMessageContent messageContent = new InputTextMessageContent("Boshlash");
+            InputTextMessageContent messageContent = new InputTextMessageContent("Boshlash uchun tugamni bosing \uD83D\uDC47");
             InlineQueryResultArticle article = new InlineQueryResultArticle("1", "Tic Tac Toe", messageContent);
 
             String id = UUID.randomUUID().toString();
@@ -42,7 +47,7 @@ public class TicTacToeInlineProcessor implements Processor<TicTacToeState> {
                 id = UUID.randomUUID().toString();
             }
 
-            article.description("X, 0");
+            article.description(BaseUtils.BUTTON_X + BaseUtils.BUTTON_0);
             article.replyMarkup(inlineKeyboardFactory.startButton(id));
 
             @SuppressWarnings("rawtypes")
@@ -58,6 +63,8 @@ public class TicTacToeInlineProcessor implements Processor<TicTacToeState> {
                     }};
             ticTacToeState.put(id, stateHashMap);
 
+            User chat = update.inlineQuery().from();
+            userService.updateFullName(BaseUtils.getFullName(chat.firstName(), chat.lastName()), chat.id());
         }
     }
 }

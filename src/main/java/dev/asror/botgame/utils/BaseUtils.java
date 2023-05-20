@@ -14,6 +14,9 @@ public interface BaseUtils {
                         """;
     String TIC_TAC_TOE = "Tic tac toe (X, 0 o'yini)";
 
+    String BUTTON_0 = "⭕";
+    String BUTTON_X = "❌";
+
     static String getFullName(String firstName, String lastName) {
         return firstName + " " + (Objects.nonNull(lastName) ? lastName : "");
     }
@@ -21,6 +24,7 @@ public interface BaseUtils {
     static String getGameString(String user1, String user2, String queueUser){
         return  """
                 O'yin davom etmoqda!
+                
                 Birinchi o'yinchi: %s
                 Ikkinchi o'yinchi: %s
                                 

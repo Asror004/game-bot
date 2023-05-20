@@ -2,6 +2,7 @@ package dev.asror.botgame.processors.callback;
 
 import com.pengrad.telegrambot.TelegramBot;
 import com.pengrad.telegrambot.model.*;
+import com.pengrad.telegrambot.model.request.InlineKeyboardMarkup;
 import com.pengrad.telegrambot.request.AnswerCallbackQuery;
 import com.pengrad.telegrambot.request.EditMessageReplyMarkup;
 import com.pengrad.telegrambot.request.EditMessageText;
@@ -9,6 +10,7 @@ import com.pengrad.telegrambot.request.SendMessage;
 import dev.asror.botgame.config.TelegramBotConfiguration;
 import dev.asror.botgame.domain.TicTacToe;
 import dev.asror.botgame.domain.UserDomain;
+import dev.asror.botgame.dtos.FinishGameDto;
 import dev.asror.botgame.processors.Processor;
 import dev.asror.botgame.repository.UserRepository;
 import dev.asror.botgame.service.TicTacToeService;
@@ -19,8 +21,10 @@ import dev.asror.botgame.state.TicTacToeState;
 import dev.asror.botgame.utils.BaseUtils;
 import dev.asror.botgame.utils.factory.InlineKeyboardFactory;
 import lombok.RequiredArgsConstructor;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
@@ -48,11 +52,16 @@ public class TicTacToeWithFriendsCallbackProcessor implements Processor<TicTacTo
         long chatId = Objects.nonNull(message) ? message.chat().id() : chat.id();
 
         if (data.startsWith("start")) {
+            if (ticTacToeState.get(ticTacToeId) == null){
+                sendAlert("Bu o'yin tugagan yoki mavjud emas!", callbackQuery.id());
+                return;
+            }
+
             if (Objects.isNull(userState.get(chatId)))
                 saveUser(chat, ticTacToeId);
 
             if (state == null) {
-                CompletableFuture.runAsync(() -> startGame(inlineMessageId, ticTacToeId, chatId));
+                CompletableFuture.runAsync(() -> startGame(inlineMessageId, ticTacToeId, chat));
 
                 started(chat, ticTacToeId);
             } else if (state.equals(TicTacToeState.SEND)) {
@@ -60,8 +69,6 @@ public class TicTacToeWithFriendsCallbackProcessor implements Processor<TicTacTo
                 answerCallbackQuery.text("Sherigingiz start bosishini kuting!");
                 answerCallbackQuery.showAlert(true);
                 bot.execute(answerCallbackQuery);
-            } else {
-                System.out.println(state);
             }
         } else {
             TicTacToe ticTacToe = ticTacToes.get(ticTacToeId);
@@ -82,7 +89,8 @@ public class TicTacToeWithFriendsCallbackProcessor implements Processor<TicTacTo
                 CompletableFuture.runAsync(() ->
                         sendAlert("Sizning navbatingiz emas!", callbackQuery.id()));
                 return;
-            } else if (!current && ticTacToe.getPlayer1() == chatId) {
+            }
+            else if (!current && ticTacToe.getPlayer1() == chatId) {
                 CompletableFuture.runAsync(() ->
                         sendAlert("Sizning navbatingiz emas!", callbackQuery.id()));
                 return;
@@ -115,54 +123,89 @@ public class TicTacToeWithFriendsCallbackProcessor implements Processor<TicTacTo
 
             bot.execute(editMessageText);
 
-            CompletableFuture.runAsync(() -> {
-                if (hasWon(board[i][j], ticTacToeId)) {
-                    if (ticTacToe.getStatus().equals(Status.FINISH)){
-                        return;
-                    }
-                    ticTacToe.setStatus(Status.FINISH);
-                    sendAlert("Siz yutdingiz!", callbackQuery.id());
+            FinishGameDto dto = new FinishGameDto(ticTacToe, callbackQuery.id(), inlineMessageId, chatId);
+            finishGameWin(dto, i, j);
+            finishGameFull(dto);
+        }
 
-                    String winPlayer = ticTacToe.getPlayer1() == chatId ? ticTacToe.getPlayer1Name() : ticTacToe.getPlayer2Name();
+    }
 
-                    String text = """
+    private void finishGameWin(FinishGameDto dto, int i, int j) {
+        CompletableFuture.runAsync(() -> {
+            TicTacToe ticTacToe = dto.ticTacToe();
+            byte[][] board = ticTacToe.getBoard();
+            String ticTacToeId = ticTacToe.getId();
+
+            if (hasWon(board[i][j], ticTacToeId)) {
+                if (ticTacToe.getStatus().equals(Status.FINISH)){
+                    return;
+                }
+                ticTacToe.setStatus(Status.FINISH);
+                sendAlert("Siz yutdingiz!\nO'yinni saqlashga 10 daqiqa vaqtingiz bor!", dto.callBackQueryId());
+
+                String winPlayer = ticTacToe.getPlayer1() == dto.chatId() ? ticTacToe.getPlayer1Name() : ticTacToe.getPlayer2Name();
+
+                String text = """
                             O'yin tugadi
                             %s go'lib bo'ldi!
                             Birinchi o'yinchi: %s
                             Ikkinchi o'yinchi: %s
                             """.formatted(winPlayer, ticTacToe.getPlayer1Name(), ticTacToe.getPlayer2Name());
-                    EditMessageText winMessageText = new EditMessageText(inlineMessageId, text);
-                    winMessageText.replyMarkup(inlineKeyboardFactory.ticTacToeButtons(board, ticTacToeId));
-                    bot.execute(winMessageText);
-                }
-            });
 
-            CompletableFuture.runAsync(() -> {
-                if (isBoardFull(ticTacToeId)) {
-                    ticTacToe.setStatus(Status.FINISH);
-                    sendAlert("O'yin tugadi!", callbackQuery.id());
+                EditMessageText winMessageText = new EditMessageText(dto.inlineMessageId(), text);
+                InlineKeyboardMarkup markup = inlineKeyboardFactory.ticTacToeButtons(ticTacToes.get(ticTacToeId).getBoard(),
+                        ticTacToeId);
+                winMessageText.replyMarkup(inlineKeyboardFactory.getFinishGameMarkup(markup, ticTacToeId));
+                bot.execute(winMessageText);
 
-                    String text = """
+                Map<Long, TicTacToeState> stateMap = ticTacToeState.get(ticTacToeId);
+                stateMap.put(ticTacToe.getPlayer1(), null);
+                stateMap.put(ticTacToe.getPlayer1(), null);
+
+                ticTacToe.setFinishTime(LocalDateTime.now());
+                currentPlayer.remove(ticTacToeId);
+            }
+        });
+    }
+
+    private void finishGameFull(FinishGameDto dto) {
+        CompletableFuture.runAsync(() -> {
+            TicTacToe ticTacToe = dto.ticTacToe();
+            String ticTacToeId = ticTacToe.getId();
+
+            if (isBoardFull(ticTacToeId)) {
+                ticTacToe.setStatus(Status.FINISH);
+                sendAlert("O'yin tugadi!\nO'yinni saqlashga 10 daqiqa vaqtingiz bor!", dto.callBackQueryId());
+
+                String text = """
                             O'yin tugadi
                             Hech kim yutmadi!
                             Birinchi o'yinchi: %s
                             Ikkinchi o'yinchi: %s
                             """.formatted(ticTacToe.getPlayer1Name(), ticTacToe.getPlayer2Name());
-                    EditMessageText finishMessageText = new EditMessageText(inlineMessageId, text);
-                    finishMessageText.replyMarkup(inlineKeyboardFactory.ticTacToeButtons(board, ticTacToeId));
-                    bot.execute(finishMessageText);
-                }
-            });
-        }
 
+                EditMessageText finishMessageText = new EditMessageText(dto.inlineMessageId(), text);
+                InlineKeyboardMarkup markup = inlineKeyboardFactory.ticTacToeButtons(ticTacToes.get(ticTacToeId).getBoard(),
+                        ticTacToeId);
+                finishMessageText.replyMarkup(inlineKeyboardFactory.getFinishGameMarkup(markup, ticTacToeId));
+                bot.execute(finishMessageText);
+
+                Map<Long, TicTacToeState> stateMap = ticTacToeState.get(ticTacToeId);
+                stateMap.put(ticTacToe.getPlayer1(), null);
+                stateMap.put(ticTacToe.getPlayer1(), null);
+
+                ticTacToe.setFinishTime(LocalDateTime.now());
+                currentPlayer.remove(ticTacToeId);
+            }
+        });
     }
 
-    private void startGame(String inlineMessageId, String ticTacToeId, long chatId) {
+    private void startGame(String inlineMessageId, String ticTacToeId, User chat) {
         long player1 = ticTacToeState.get(ticTacToeId).keySet()
-                .stream().filter(ch -> !ch.equals(chatId)).findFirst().orElseThrow();
+                .stream().filter(ch -> !ch.equals(chat.id())).findFirst().orElseThrow();
 
         String user1 = userService.findById(player1).orElseThrow().getFullName();
-        String user2 = userService.findById(chatId).orElseThrow().getFullName();
+        String user2 = chat.firstName();
 
         String text = """
                 O'yin boshlandi!
@@ -198,7 +241,7 @@ public class TicTacToeWithFriendsCallbackProcessor implements Processor<TicTacTo
         return false;
     }
 
-    private void sendAlert(String text, String callBackQueryId) {
+    public void sendAlert(String text, String callBackQueryId) {
         AnswerCallbackQuery answerCallbackQuery = new AnswerCallbackQuery(callBackQueryId);
         answerCallbackQuery.text(text);
         answerCallbackQuery.showAlert(true);
@@ -230,7 +273,7 @@ public class TicTacToeWithFriendsCallbackProcessor implements Processor<TicTacTo
         ticTaToeUserState.put(player1, TicTacToeState.PLAY);
 
         String fullName1 = userService.findById(player1).orElseThrow().getFullName();
-        String fullName2 = userService.findById(chatId).orElseThrow().getFullName();
+        String fullName2 = chat.firstName();
 
         ticTacToes.put(ticTacToeId, TicTacToe.childBuilder()
                 .id(ticTacToeId)

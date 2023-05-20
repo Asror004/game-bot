@@ -40,7 +40,7 @@ public class CallbackHandler implements Handler {
         try {
             id = data[1];
         } catch (Exception e){
-            id = "";
+            id = null;
         }
 
         Map<Long, TicTacToeState> stateMap = ticTacToeState.get(id);
@@ -48,6 +48,8 @@ public class CallbackHandler implements Handler {
 
         if (Objects.nonNull(stateMap) || data[0].equals("start"))
             ticTacToeProcessor.process(update, stateMap.get(chatId));
+        else if (Objects.nonNull(id))
+            ticTacToeProcessor.sendAlert("Bu o'yin tugagan yoki mavjud emas!", callbackQuery.id());
         else if (state instanceof DefaultState defaultState) {
             defaultCallbackProcessor.process(update, defaultState);
         }

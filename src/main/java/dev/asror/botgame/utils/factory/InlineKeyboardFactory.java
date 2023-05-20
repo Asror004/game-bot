@@ -2,6 +2,7 @@ package dev.asror.botgame.utils.factory;
 
 import com.pengrad.telegrambot.model.request.InlineKeyboardButton;
 import com.pengrad.telegrambot.model.request.InlineKeyboardMarkup;
+import dev.asror.botgame.utils.BaseUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -47,10 +48,14 @@ public class InlineKeyboardFactory {
         return markup;
     }
 
+    public InlineKeyboardMarkup getFinishGameMarkup(InlineKeyboardMarkup markup, String id){
+        return markup.addRow(createButton("O'yinni saqlash!", "save|"+id));
+    }
+
     private String getChar(byte n) {
         return switch (n){
-            case 1 -> "0";
-            case 2 -> "X";
+            case 1 -> BaseUtils.BUTTON_0;
+            case 2 -> BaseUtils.BUTTON_X;
             default -> "ㅤㅤㅤㅤ";
         };
     }

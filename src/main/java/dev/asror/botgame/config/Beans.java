@@ -21,6 +21,8 @@ public class Beans {
     public ExecutorService executor(){
         return Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
     }
+
+    // String -- ticTacToeId
     @Bean
     public Map<String, TicTacToe> ticTacToes() {return new HashMap<>();}
     @Bean

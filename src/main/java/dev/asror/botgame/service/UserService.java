@@ -60,4 +60,7 @@ public class UserService {
     }
 
 
+    public void updateFullName(String fullName, long chatId) {
+        userRepository.updateFullNameByChatId(fullName, chatId);
+    }
 }

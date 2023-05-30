@@ -22,14 +22,13 @@ public class Beans {
         return Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
     }
 
-    // String -- ticTacToeId
+    // String => ticTacToeId
     @Bean
     public Map<String, TicTacToe> ticTacToes() {return new HashMap<>();}
     @Bean
     public Map<String, Map<Long, TicTacToeState>> ticTacToeState(){
         return new HashMap<>();
     }
-
     @Bean
     public Map<String, Boolean> currentPlayer(){return new HashMap<>();}
 }

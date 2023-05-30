@@ -51,6 +51,9 @@ public class InlineKeyboardFactory {
     public InlineKeyboardMarkup getFinishGameMarkup(InlineKeyboardMarkup markup, String id){
         return markup.addRow(createButton("O'yinni saqlash!", "save|"+id));
     }
+    public InlineKeyboardButton getExitGameButton(String id){
+        return createButton("O'yinni tugatish!", "exit|"+id);
+    }
 
     private String getChar(byte n) {
         return switch (n){
@@ -60,7 +63,7 @@ public class InlineKeyboardFactory {
         };
     }
 
-    public InlineKeyboardMarkup ticTacToeStartButtons(String id){
+    public InlineKeyboardMarkup ticTacToeStartButtons(String id) {
         InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
         InlineKeyboardButton[] row;
         StringJoiner sj;
@@ -82,10 +85,10 @@ public class InlineKeyboardFactory {
         return markup;
     }
 
-    public InlineKeyboardMarkup startButton(String id){
+    public InlineKeyboardMarkup startButton(String id) {
         return new InlineKeyboardMarkup(createButton("Boshlash", "start|"+id));
     }
-    public InlineKeyboardMarkup send(String uuid){
+    public InlineKeyboardMarkup send(String uuid) {
         InlineKeyboardButton button = new InlineKeyboardButton("Ulashish")
                 .switchInlineQuery(uuid);
         return new InlineKeyboardMarkup(button);

@@ -38,6 +38,7 @@ public class TicTacToeWithFriendsCallbackProcessor implements Processor<TicTacTo
     private final Map<String, TicTacToe> ticTacToes;
     private final Map<String, Map<Long, TicTacToeState>> ticTacToeState;
     private final Map<String, Boolean> currentPlayer;
+    private final TicTacToeService ticTacToeService;
 
     @Override
     public void process(Update update, TicTacToeState state) {
@@ -52,7 +53,7 @@ public class TicTacToeWithFriendsCallbackProcessor implements Processor<TicTacTo
         long chatId = Objects.nonNull(message) ? message.chat().id() : chat.id();
 
         if (data.startsWith("start")) {
-            if (ticTacToeState.get(ticTacToeId) == null){
+            if (ticTacToeState.get(ticTacToeId) == null) {
                 sendAlert("Bu o'yin tugagan yoki mavjud emas!", callbackQuery.id());
                 return;
             }
@@ -70,11 +71,26 @@ public class TicTacToeWithFriendsCallbackProcessor implements Processor<TicTacTo
                 answerCallbackQuery.showAlert(true);
                 bot.execute(answerCallbackQuery);
             }
+        } else if (data.startsWith("save")) {
+            TicTacToe ticTacToe = ticTacToes.get(ticTacToeId);
+            if (!ticTacToe.getStatus().equals(Status.FINISH)) {
+                CompletableFuture.runAsync(() -> sendAlert("O'yin tugamagan!", callbackQuery.id()));
+                return;
+            }
+            if (Objects.nonNull(ticTacToeService.findById(ticTacToeId))) {
+                sendAlert("O'yinni allaqachon o'zingiz yoki sherigingiz saqlagan!", callbackQuery.id());
+                return;
+            }
+            sendAlert("Muvaffiqiyatli saqlandi!", callbackQuery.id());
+            ticTacToeService.save(ticTacToe);
+        } else if (data.startsWith("exit")) {
+            finishGameStop(new FinishGameDto(ticTacToes.get(ticTacToeId), callbackQuery.id(),
+                    callbackQuery.inlineMessageId(), chatId));
         } else {
             TicTacToe ticTacToe = ticTacToes.get(ticTacToeId);
             if (ticTacToe.getStatus().equals(Status.FINISH)) {
                 CompletableFuture.runAsync(() ->
-                        sendAlert("O'yin tugagan!", callbackQuery.id()));
+                        sendAlert("O'yin tugagan yoki to'xtatilgan!", callbackQuery.id()));
                 return;
             }
 
@@ -89,8 +105,7 @@ public class TicTacToeWithFriendsCallbackProcessor implements Processor<TicTacTo
                 CompletableFuture.runAsync(() ->
                         sendAlert("Sizning navbatingiz emas!", callbackQuery.id()));
                 return;
-            }
-            else if (!current && ticTacToe.getPlayer1() == chatId) {
+            } else if (!current && ticTacToe.getPlayer1() == chatId) {
                 CompletableFuture.runAsync(() ->
                         sendAlert("Sizning navbatingiz emas!", callbackQuery.id()));
                 return;
@@ -119,7 +134,8 @@ public class TicTacToeWithFriendsCallbackProcessor implements Processor<TicTacTo
                     ));
 
             editMessageText.replyMarkup(inlineKeyboardFactory
-                    .ticTacToeButtons(board, ticTacToeId));
+                    .ticTacToeButtons(board, ticTacToeId)
+                    .addRow(inlineKeyboardFactory.getExitGameButton(ticTacToeId)));
 
             bot.execute(editMessageText);
 
@@ -137,7 +153,7 @@ public class TicTacToeWithFriendsCallbackProcessor implements Processor<TicTacTo
             String ticTacToeId = ticTacToe.getId();
 
             if (hasWon(board[i][j], ticTacToeId)) {
-                if (ticTacToe.getStatus().equals(Status.FINISH)){
+                if (ticTacToe.getStatus().equals(Status.FINISH)) {
                     return;
                 }
                 ticTacToe.setStatus(Status.FINISH);
@@ -146,11 +162,13 @@ public class TicTacToeWithFriendsCallbackProcessor implements Processor<TicTacTo
                 String winPlayer = ticTacToe.getPlayer1() == dto.chatId() ? ticTacToe.getPlayer1Name() : ticTacToe.getPlayer2Name();
 
                 String text = """
-                            O'yin tugadi
-                            %s go'lib bo'ldi!
-                            Birinchi o'yinchi: %s
-                            Ikkinchi o'yinchi: %s
-                            """.formatted(winPlayer, ticTacToe.getPlayer1Name(), ticTacToe.getPlayer2Name());
+                        O'yin tugadi!
+                                                    
+                        %s go'lib bo'ldi!
+                                                    
+                        Birinchi o'yinchi: %s
+                        Ikkinchi o'yinchi: %s
+                        """.formatted(winPlayer, ticTacToe.getPlayer1Name(), ticTacToe.getPlayer2Name());
 
                 EditMessageText winMessageText = new EditMessageText(dto.inlineMessageId(), text);
                 InlineKeyboardMarkup markup = inlineKeyboardFactory.ticTacToeButtons(ticTacToes.get(ticTacToeId).getBoard(),
@@ -163,8 +181,40 @@ public class TicTacToeWithFriendsCallbackProcessor implements Processor<TicTacTo
                 stateMap.put(ticTacToe.getPlayer1(), null);
 
                 ticTacToe.setFinishTime(LocalDateTime.now());
+                ticTacToe.setWinPlayer(dto.chatId());
                 currentPlayer.remove(ticTacToeId);
             }
+        });
+    }
+
+    private void finishGameStop(FinishGameDto dto) {
+        CompletableFuture.runAsync(() -> {
+            TicTacToe ticTacToe = dto.ticTacToe();
+            String ticTacToeId = ticTacToe.getId();
+
+
+            ticTacToe.setStatus(Status.FINISH);
+            sendAlert("O'yin to'xtatildi!", dto.callBackQueryId());
+
+            String text = """
+                    O'yin to'xtatildi!
+                                                                                                    
+                    Birinchi o'yinchi: %s
+                    Ikkinchi o'yinchi: %s
+                    """.formatted(ticTacToe.getPlayer1Name(), ticTacToe.getPlayer2Name());
+
+            EditMessageText finishMessageText = new EditMessageText(dto.inlineMessageId(), text);
+            InlineKeyboardMarkup markup = inlineKeyboardFactory.ticTacToeButtons(ticTacToes.get(ticTacToeId).getBoard(),
+                    ticTacToeId);
+            finishMessageText.replyMarkup(markup);
+            bot.execute(finishMessageText);
+
+            Map<Long, TicTacToeState> stateMap = ticTacToeState.get(ticTacToeId);
+            stateMap.put(ticTacToe.getPlayer1(), null);
+            stateMap.put(ticTacToe.getPlayer1(), null);
+
+            ticTacToe.setFinishTime(LocalDateTime.now());
+            currentPlayer.remove(ticTacToeId);
         });
     }
 
@@ -178,11 +228,13 @@ public class TicTacToeWithFriendsCallbackProcessor implements Processor<TicTacTo
                 sendAlert("O'yin tugadi!\nO'yinni saqlashga 10 daqiqa vaqtingiz bor!", dto.callBackQueryId());
 
                 String text = """
-                            O'yin tugadi
-                            Hech kim yutmadi!
-                            Birinchi o'yinchi: %s
-                            Ikkinchi o'yinchi: %s
-                            """.formatted(ticTacToe.getPlayer1Name(), ticTacToe.getPlayer2Name());
+                        O'yin tugadi!
+                                                    
+                        Hech kim yutmadi!
+                                                    
+                        Birinchi o'yinchi: %s
+                        Ikkinchi o'yinchi: %s
+                        """.formatted(ticTacToe.getPlayer1Name(), ticTacToe.getPlayer2Name());
 
                 EditMessageText finishMessageText = new EditMessageText(dto.inlineMessageId(), text);
                 InlineKeyboardMarkup markup = inlineKeyboardFactory.ticTacToeButtons(ticTacToes.get(ticTacToeId).getBoard(),
@@ -209,6 +261,7 @@ public class TicTacToeWithFriendsCallbackProcessor implements Processor<TicTacTo
 
         String text = """
                 O'yin boshlandi!
+                                
                 Birinchi o'yinchi: %s
                 Ikkinchi o'yinchi: %s
                                 
@@ -218,7 +271,8 @@ public class TicTacToeWithFriendsCallbackProcessor implements Processor<TicTacTo
         EditMessageText editMessageText =
                 new EditMessageText(inlineMessageId, text);
         editMessageText.replyMarkup(inlineKeyboardFactory
-                .ticTacToeStartButtons(ticTacToeId));
+                .ticTacToeStartButtons(ticTacToeId)
+                .addRow(inlineKeyboardFactory.getExitGameButton(ticTacToeId)));
 
         bot.execute(editMessageText);
     }
@@ -281,6 +335,7 @@ public class TicTacToeWithFriendsCallbackProcessor implements Processor<TicTacTo
                 .player2(chatId)
                 .player1Name(fullName1)
                 .player2Name(fullName2)
+                .createdAt(LocalDateTime.now())
                 .status(Status.PLAY).build());
     }
 

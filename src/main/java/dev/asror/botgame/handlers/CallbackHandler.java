@@ -5,7 +5,6 @@ import com.pengrad.telegrambot.model.CallbackQuery;
 import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.Update;
 import dev.asror.botgame.config.TelegramBotConfiguration;
-import dev.asror.botgame.domain.TicTacToe;
 import dev.asror.botgame.processors.callback.DefaultCallbackProcessor;
 import dev.asror.botgame.processors.callback.TicTacToeWithFriendsCallbackProcessor;
 import dev.asror.botgame.state.DefaultState;
@@ -14,7 +13,6 @@ import dev.asror.botgame.state.TicTacToeState;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
 

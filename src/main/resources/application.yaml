@@ -1,0 +1,12 @@
+bot:
+  token: '5853188901:AAGdOjZEZOYmtE-FWrX-5zM7UnEjN5ra6PM'
+
+spring:
+  datasource:
+    url: 'jdbc:postgresql://localhost:5432/game_bot?currentSchema=games'
+    username: 'postgres'
+    password: '123'
+    driverClassName: 'org.postgresql.Driver'
+  jpa:
+    show-sql: true
+    hibernate.ddl-auto: update

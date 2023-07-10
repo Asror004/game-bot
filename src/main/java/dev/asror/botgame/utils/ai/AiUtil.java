@@ -9,7 +9,7 @@ public class AiUtil {
 
 
 
-    static byte player = 2, opponent = 1;
+    static byte player = 1, opponent = 2;
 
     // This function returns true if there are moves
 // remaining on the board. It returns false if

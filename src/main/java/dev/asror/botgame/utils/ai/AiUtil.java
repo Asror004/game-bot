@@ -184,19 +184,18 @@ public class AiUtil {
     }
 
     // Driver code
-/*    public static void main(String[] args) {
-        byte[][] board = {
-
-                {2, 2, 1},
-                {0, 1, 0},
-                {0, 2, 0}
-        };
-
-        Move bestMove = findBestMove(board);
-
-        System.out.printf("The Optimal Move is :\n");
-        System.out.printf("ROW: %d COL: %d\n\n",
-                bestMove.row, bestMove.col);
-    }*/
+//    public static void main(String[] args) {
+//        byte[][] board = {
+//                {1, 0, 0},
+//                {0, 0, 0},
+//                {0, 0, 0}
+//        };
+//
+//        Move bestMove = findBestMove(board);
+//
+//        System.out.printf("The Optimal Move is :\n");
+//        System.out.printf("ROW: %d COL: %d\n\n",
+//                bestMove.row, bestMove.col);
+//    }
 
 }

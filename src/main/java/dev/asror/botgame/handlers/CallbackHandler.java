@@ -6,10 +6,12 @@ import com.pengrad.telegrambot.model.Message;
 import com.pengrad.telegrambot.model.Update;
 import dev.asror.botgame.config.TelegramBotConfiguration;
 import dev.asror.botgame.processors.callback.DefaultCallbackProcessor;
+import dev.asror.botgame.processors.callback.TicTacToeWithAICallbackProcessor;
 import dev.asror.botgame.processors.callback.TicTacToeWithFriendsCallbackProcessor;
 import dev.asror.botgame.state.DefaultState;
 import dev.asror.botgame.state.State;
 import dev.asror.botgame.state.TicTacToeState;
+import dev.asror.botgame.state.TicTacToeVsAI;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -24,6 +26,8 @@ public class CallbackHandler implements Handler {
     private final DefaultCallbackProcessor defaultCallbackProcessor;
     private final TicTacToeWithFriendsCallbackProcessor ticTacToeProcessor;
     private final Map<String, Map<Long, TicTacToeState>> ticTacToeState;
+    private final Map<String, TicTacToeVsAI> ticTacToeWithAIState;
+    private final TicTacToeWithAICallbackProcessor ticTacToeWithAICallbackProcessor;
 
 
     @Override
@@ -41,11 +45,17 @@ public class CallbackHandler implements Handler {
             id = null;
         }
 
+        TicTacToeVsAI ticTacToeVsAI = ticTacToeWithAIState.get(id);
         Map<Long, TicTacToeState> stateMap = ticTacToeState.get(id);
+        ticTacToeWithAIState.get(id);
         State state = userState.get(chatId);
 
-        if (Objects.nonNull(stateMap) || data[0].equals("start"))
-            ticTacToeProcessor.process(update, stateMap.get(chatId));
+        if (Objects.nonNull(stateMap) || Objects.nonNull(ticTacToeVsAI) || data[0].equals("start"))
+            if (Objects.nonNull(stateMap))
+                ticTacToeProcessor.process(update, stateMap.get(chatId));
+
+            if (Objects.nonNull(ticTacToeVsAI))
+                ticTacToeWithAICallbackProcessor.process(update, ticTacToeVsAI);
         else if (Objects.nonNull(id))
             ticTacToeProcessor.sendAlert("Bu o'yin tugagan yoki mavjud emas!", callbackQuery.id());
         else if (state instanceof DefaultState defaultState) {

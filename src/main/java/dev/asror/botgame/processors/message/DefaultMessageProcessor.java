@@ -10,10 +10,7 @@ import com.pengrad.telegrambot.request.SendMessage;
 import dev.asror.botgame.config.TelegramBotConfiguration;
 import dev.asror.botgame.processors.Processor;
 import dev.asror.botgame.service.UserService;
-import dev.asror.botgame.state.DefaultState;
-import dev.asror.botgame.state.RegistrationState;
-import dev.asror.botgame.state.State;
-import dev.asror.botgame.state.TicTacToeState;
+import dev.asror.botgame.state.*;
 import dev.asror.botgame.utils.BaseUtils;
 import dev.asror.botgame.utils.factory.InlineKeyboardFactory;
 import dev.asror.botgame.utils.factory.ReplyKeyboardMarkupFactory;
@@ -23,6 +20,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -33,6 +31,7 @@ public class DefaultMessageProcessor implements Processor<DefaultState> {
     private final SendMessageFactory sendMessageFactory;
     private final InlineKeyboardFactory inlineKeyboardFactory;
     private final UserService userService;
+    private final Map<String, TicTacToeVsAI> ticTacToeWithAIState;
 
     @Override
     public void process(Update update, DefaultState state) {
@@ -48,6 +47,14 @@ public class DefaultMessageProcessor implements Processor<DefaultState> {
                     SendMessage sendMessage = new SendMessage(chatID, "Do'stlar bilan o'ynash uchun tugmani bosing 👇");
                     sendMessage.replyMarkup(inlineKeyboardFactory.send(userService.findCodeById(chatID)));
                     bot.execute(sendMessage);
+                } else if (text.equals(BaseUtils.VS_AI)) {
+                    SendMessage sendMessage = new SendMessage(chatID, "Boshlash uchun tugmani bosing 👇");
+                    String id = UUID.randomUUID().toString();
+                    sendMessage.replyMarkup(inlineKeyboardFactory.startButton(id));
+                    bot.execute(sendMessage);
+
+                    ticTacToeWithAIState.put(id, TicTacToeVsAI.START);
+//                    userState.put(chatID, TicTacToeVsAI.START);
                 } else if (text.equals("/start")) {
                     userState.put(chatID, DefaultState.MAIN_STATE);
                     bot.execute(sendMessageFactory.sendMessageWithMainMenu(chatID, BaseUtils.MENU));

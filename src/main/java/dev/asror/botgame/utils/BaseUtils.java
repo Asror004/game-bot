@@ -16,6 +16,7 @@ public interface BaseUtils {
 
     String BUTTON_0 = "⭕";
     String BUTTON_X = "❌";
+    String VS_AI = "AI bilan o'ynash";
 
     static String getFullName(String firstName, String lastName) {
         return firstName + " " + (Objects.nonNull(lastName) ? lastName : "");

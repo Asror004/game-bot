@@ -8,7 +8,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class ReplyKeyboardMarkupFactory {
     public ReplyKeyboardMarkup mainMenu() {
-        return getReplyMarkup(new KeyboardButton(BaseUtils.TIC_TAC_TOE));
+        return getReplyMarkup(
+                new KeyboardButton(BaseUtils.TIC_TAC_TOE),
+                new KeyboardButton(BaseUtils.VS_AI)
+        );
     }
 
     public ReplyKeyboardMarkup phoneNumberAndSkip() {

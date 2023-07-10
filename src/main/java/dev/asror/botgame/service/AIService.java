@@ -12,14 +12,14 @@ import java.util.Map;
 public class AIService {
 
 
-    public final Map<String, Boolean> currentPlayer;
-    public final Map<String, TicTacToe> ticTacToes;
+    private final Map<String, Boolean> currentPlayer;
+    private final Map<String, TicTacToe> ticTacToes;
 
     public byte[][] findBestWay(String boardId) {
         TicTacToe ticTacToe = ticTacToes.get(boardId);
         byte[][] board = ticTacToe.getBoard();
         AiUtil.Move bestMove = AiUtil.findBestMove(board);
-        board[bestMove.row][bestMove.col] = 2;
+        board[bestMove.row][bestMove.col] = 1;
         return board;
     }
 

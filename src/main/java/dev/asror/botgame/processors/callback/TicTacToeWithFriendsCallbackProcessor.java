@@ -189,9 +189,15 @@ public class TicTacToeWithFriendsCallbackProcessor implements Processor<TicTacTo
 
     private void finishGameStop(FinishGameDto dto) {
         CompletableFuture.runAsync(() -> {
+
             TicTacToe ticTacToe = dto.ticTacToe();
             String ticTacToeId = ticTacToe.getId();
 
+            if (!(ticTacToe.getPlayer1() == dto.chatId() || ticTacToe.getPlayer2() == dto.chatId())) {
+                CompletableFuture.runAsync(() ->
+                        sendAlert("Siz o'yinda emassiz!", dto.callBackQueryId()));
+                return;
+            }
 
             ticTacToe.setStatus(Status.FINISH);
             sendAlert("O'yin to'xtatildi!", dto.callBackQueryId());

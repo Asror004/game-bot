@@ -53,8 +53,7 @@ public class CallbackHandler implements Handler {
         if (Objects.nonNull(stateMap) || Objects.nonNull(ticTacToeVsAI) || data[0].equals("start"))
             if (Objects.nonNull(stateMap))
                 ticTacToeProcessor.process(update, stateMap.get(chatId));
-
-            if (Objects.nonNull(ticTacToeVsAI))
+            else if (Objects.nonNull(ticTacToeVsAI))
                 ticTacToeWithAICallbackProcessor.process(update, ticTacToeVsAI);
         else if (Objects.nonNull(id))
             ticTacToeProcessor.sendAlert("Bu o'yin tugagan yoki mavjud emas!", callbackQuery.id());

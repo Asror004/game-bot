@@ -142,7 +142,7 @@ public class AiUtil {
 
     // This will return the best possible
 // move for the player
-  public   static Move findBestMove(byte[][] board) {
+  public static Move findBestMove(byte[][] board) {
         int bestVal = -1000;
         Move bestMove = new Move();
         bestMove.row = -1;
@@ -177,18 +177,15 @@ public class AiUtil {
             }
         }
 
-        System.out.printf("The value of the best Move " +
-                "is : %d\n\n", bestVal);
-
         return bestMove;
     }
 
     // Driver code
 //    public static void main(String[] args) {
 //        byte[][] board = {
-//                {1, 0, 0},
-//                {0, 0, 0},
-//                {0, 0, 0}
+//                {1, 2, 1},
+//                {2, 2, 1},
+//                {1, 1, 2}
 //        };
 //
 //        Move bestMove = findBestMove(board);

@@ -8,6 +8,7 @@ import com.pengrad.telegrambot.request.AnswerInlineQuery;
 import com.pengrad.telegrambot.request.DeleteMessage;
 import com.pengrad.telegrambot.request.SendMessage;
 import dev.asror.botgame.config.TelegramBotConfiguration;
+import dev.asror.botgame.domain.TicTacToe;
 import dev.asror.botgame.processors.Processor;
 import dev.asror.botgame.service.UserService;
 import dev.asror.botgame.state.*;
@@ -50,11 +51,15 @@ public class DefaultMessageProcessor implements Processor<DefaultState> {
                 } else if (text.equals(BaseUtils.VS_AI)) {
                     SendMessage sendMessage = new SendMessage(chatID, "Boshlash uchun tugmani bosing 👇");
                     String id = UUID.randomUUID().toString();
+
+                    if (Objects.nonNull(ticTacToeWithAIState.get(id))){
+                        System.out.println("aaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+                    }
+
                     sendMessage.replyMarkup(inlineKeyboardFactory.startButton(id));
                     bot.execute(sendMessage);
 
                     ticTacToeWithAIState.put(id, TicTacToeVsAI.START);
-//                    userState.put(chatID, TicTacToeVsAI.START);
                 } else if (text.equals("/start")) {
                     userState.put(chatID, DefaultState.MAIN_STATE);
                     bot.execute(sendMessageFactory.sendMessageWithMainMenu(chatID, BaseUtils.MENU));

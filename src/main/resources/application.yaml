@@ -3,9 +3,9 @@ bot:
 
 spring:
   datasource:
-    url: 'jdbc:postgresql://localhost:5432/game_bot?currentSchema=games'
+    url: 'postgresql://postgres:wbzneJ0KjUymRLcON8Xf@containers-us-west-125.railway.app:7400/railway'
     username: 'postgres'
-    password: '123'
+    password: 'wbzneJ0KjUymRLcON8Xf'
     driverClassName: 'org.postgresql.Driver'
   jpa:
     show-sql: true

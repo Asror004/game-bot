@@ -3,10 +3,14 @@ bot:
 
 spring:
   datasource:
-    url: 'postgresql://postgres:wbzneJ0KjUymRLcON8Xf@containers-us-west-125.railway.app:7400/railway'
-    username: 'postgres'
-    password: 'wbzneJ0KjUymRLcON8Xf'
-    driverClassName: 'org.postgresql.Driver'
+    url: 'jdbc:postgresql://${PROD_DB_HOST}:${PROD_DB_PORT}/${PROD_DB_NAME}'
+    username: ${PROD_DB_USERNAME}
+    password: ${PROD_DB_PASSWORD}
+
   jpa:
     show-sql: true
     hibernate.ddl-auto: update
+
+  sql:
+    init:
+      node: always
